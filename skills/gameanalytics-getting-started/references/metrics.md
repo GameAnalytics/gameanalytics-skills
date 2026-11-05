@@ -4,6 +4,8 @@ Definitions follow the [GameAnalytics metrics reference](https://docs.gameanalyt
 
 ## KPI to call
 
+The read field applies to `group`, `split` and multi-game results. A single-game timeseries already returns one `value` per period, which is that field.
+
 | KPI | Call | Read field | Notes |
 |---|---|---|---|
 | DAU | `query_metric` `user_unique`, `granularity: "day"` | `user_unique` | Unique users per day |
@@ -19,15 +21,20 @@ Definitions follow the [GameAnalytics metrics reference](https://docs.gameanalyt
 | Sessions | `query_metric` `session_unique` | `session_unique` | |
 | Sessions per user | `query_metric` `sessions_per_user` | `sessions_per_user` | Also returns `session_unique` and `user_unique` |
 | Session length | `query_metric` `session_length` | `mean` | Seconds per session. `sum` is total seconds |
-| Events received | `query_metric` `event_count` | | All event types together. No breakdown by event ID |
+| Events received | `query_metric` `event_count` | `event_count` | Every event the game sent. Divided by DAU, it is events per player per day, the figure behind the 500 limit. Cannot be filtered, grouped or split by `build` (returns 0 or nothing). No breakdown by event ID |
+| Events by type | `query_metric` `event_count`, `query_type: "group"`, `dimension: "category"` | `event_count` | `category` is the event type: `user` (session start), `session_end`, `business`, `ads`, `impression` (ad revenue), `resource`, `error`. Design and progression events never appear, and the groups do not add up to the total. The server describes `category` as a game genre; it is not |
+| Errors by severity | `query_metric` `event_count`, `query_type: "group"`, `dimension: "severity"` | `event_count` | `debug`, `info`, `warning`, `error`, `critical`; `null` for every non-error event. Covers the same core types as `category` |
 | Ad impressions | `query_metric` `ad_impressions_count` | | Needs ad events |
 
 Call `get_supported_metrics` when a question needs a metric not listed here.
 
 ## Response shapes
 
-- `timeseries`: `{"result": [{"timestamp": "2026-10-26T00:00:00.000Z", "result": {"user_unique": 1234}}]}`, one row per period.
-- `group`: `{"result": [{"timestamp": ..., "result": [{"country_code": "US", "user_unique": 400}, ...]}]}`.
+- **Single-game timeseries** (`query_metric`, one game): `{"metric": {...}, "period": {...}, "visualisation": {"type": "timeseries", "items": [{"date": "2026-10-26T00:00:00.000Z", "value": 1234}]}}`, one item per period.
+- **Multi-game timeseries, and retention**: `{"result": [{"timestamp": "2026-10-26T00:00:00.000Z", "result": {"user_unique": 1234}}]}`.
+- **`group`**: `{"result": [{"timestamp": ..., "result": [{"country_code": "US", "user_unique": 400}, ...]}]}`, one row per period.
+- **`split`**: `{"result": [{"timestamp": ..., "event": {"country_code": "US", "platform": "ios", "user_unique": 400}}]}`, one row per combination.
+- With `granularity: "week"`, periods start on Monday, and a range that reaches into the current week returns that partial week too.
 - A period with no data comes back as `0`, not as an error. Zero can mean "nothing happened" or "nothing was sent". Say which you cannot tell apart.
 
 ## Periods
@@ -42,8 +49,8 @@ Call `get_supported_metrics` when a question needs a metric not listed here.
 
 The Metrics API behind the GameAnalytics MCP has no event IDs. It cannot show:
 
-- Design events or progression events by name, for example whether `Level_5_Complete` is arriving.
-- Resource events (sources and sinks) by currency or item.
+- Design events or progression events at all, by name or by count. For example, whether `Level_5_Complete` is arriving.
+- Resource events by currency, item type or flow. Their total count is visible through the `resource` category.
 - Custom dimensions 01, 02, 03 and custom event fields.
 
 Point to where the user can see them instead:

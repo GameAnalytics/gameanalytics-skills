@@ -11,7 +11,7 @@ They follow the [Agent Skills](https://agentskills.io) standard, so they work in
 | `gameanalytics-tracking-plan` | Designs or audits a tracking plan by genre and KPI, with naming rules, and checks it against the daily limits: 15,000 unique design event IDs, 8,000 progression, 4,000 resource, 500 events per player. Writes `gameanalytics/tracking-plan.md` and `.csv` | Documentation MCP |
 | `gameanalytics-sdk-setup` | Integrates the SDK into your engine from the live docs, configures it before initialise, generates a typed wrapper for your plan, and gets you to a first event in Realtime | Documentation MCP |
 | `gameanalytics-getting-started` | Confirms the connection, checks data availability, lists your games, and gives a health snapshot (DAU, new users, D1 and D7 retention, revenue, ARPDAU) with five suggested next questions | GameAnalytics MCP |
-| `gameanalytics-data-check` | After a release, checks that the new build's data is arriving: freshness, the build string, adoption, expected platforms and countries, purchases, ads and errors against the previous build | GameAnalytics MCP |
+| `gameanalytics-data-check` | After a release, checks that the new build's data is arriving: freshness, the build string, adoption, expected platforms and countries, purchases, ads and sessions against the previous build, and event types, errors and events per player against the 500 limit | GameAnalytics MCP |
 | `gameanalytics-weekly-report` | A fixed-structure weekly report: KPIs week on week, top movers by country and platform, anomalies against an 8-week trend, and questions to ask next. Saved as a dated markdown file | GameAnalytics MCP |
 
 ## Requirements
@@ -55,7 +55,7 @@ The GameAnalytics MCP is read-only and returns only data your account can alread
 
 ## What these skills cannot see
 
-The GameAnalytics MCP is built on the Metrics API, which has no event IDs. The skills cannot check design, progression or resource events by name, or custom dimensions; they point you to Realtime > Live Events and AnalyticsIQ for those.
+The GameAnalytics MCP is built on the Metrics API, which has no event IDs. The skills can count events by type (purchases, ads, ad revenue, resource, errors, sessions), but they cannot see design or progression events, resource events by currency or item, or custom dimensions. For those, they point you to Realtime > Live Events and AnalyticsIQ.
 
 ## Contributing
 

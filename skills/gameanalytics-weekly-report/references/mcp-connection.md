@@ -56,6 +56,8 @@ The GameAnalytics MCP reads every organization, studio and game the signed-in ac
 ## Calling conventions
 
 - Dates are `YYYY-MM-DD` in UTC. `end_date` is inclusive: the server queries up to `23:59:59` of that day.
+- `get_games` takes no dates. It lists every game the account can query, active or not (test and legacy games included), sorted by title, as `{"games": [{"id", "title", "org_id", "studio": {"id", "name"}}]}`. Optional: `org_id`, `limit`. To see which games are active, rank them with `query_metric` `user_unique`, `query_type: "group"`, `dimension: "game_id"`: a game with no row had no activity in that range.
+- `get_studios` and `get_dimension_values` take a date range. A dimension with no values in the range returns `[null]`, for example `ab_id` when no A/B test runs.
 - `game_ids` takes game IDs as strings. Get them from `get_games`, never from a name.
 - `filters` is a flat object, AND-ed: `{"platform": "ios"}` or `{"country_code": ["US", "CA"]}`.
 - `query_type`: `timeseries` (default), `group` with one `dimension`, or `split` with exactly two `dimensions`.
@@ -64,7 +66,7 @@ The GameAnalytics MCP reads every organization, studio and game the signed-in ac
 
 ## Calls to avoid
 
-These request shapes do not match the Metrics API specification and are likely to fail. Use the workaround.
+The first four fail with a `BadRequestError` ("Unexpected field"); the last returns 0 or nothing. Use the workaround.
 
 | Avoid | Use instead |
 |---|---|
@@ -72,5 +74,6 @@ These request shapes do not match the Metrics API specification and are likely t
 | `query_metric` with `conversion_ft` | `converting_users / user_unique` |
 | `query_retention` with `retention_retro` | `retention_ahead` |
 | `query_retention` with `returning_users` | `retention_count` |
+| `query_metric` `event_count` with `build` as a filter, group or split | It returns 0 or nothing. Compare builds with `revenue`, `ad_impressions_count`, `ilrd_revenue` or `sessions_per_user` grouped by `build`, and event types for the whole game |
 
 If a call fails anyway, say which call failed and carry on without that number. Never fill the gap with an estimate.

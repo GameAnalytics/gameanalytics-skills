@@ -49,6 +49,7 @@ KPIS = [
 
 BREAKDOWN_FIELDS = {"user_unique": "user_unique", "new_users": "new_users", "revenue": "sum"}
 BREAKDOWN_LABELS = {"user_unique": "Active users", "new_users": "New users", "revenue": "IAP revenue"}
+DIMENSION_LABELS = {"country_code": "country", "platform": "platform"}
 
 
 def parse_date(value):
@@ -60,35 +61,50 @@ def day_range(start, days):
 
 
 def _rows(obj):
-    if isinstance(obj, dict) and "result" in obj and isinstance(obj["result"], list):
-        return obj["result"]
+    """Flatten tool results into rows of {timestamp, result} or {timestamp, event}.
+
+    The MCP returns three shapes: single-game timeseries as {"visualisation": {"items": [{date, value}]}},
+    group and multi-game queries as {"result": [{timestamp, result}]}, split queries as {"result": [{timestamp, event}]}.
+    """
+    if isinstance(obj, dict):
+        vis = obj.get("visualisation")
+        if isinstance(vis, dict) and isinstance(vis.get("items"), list):
+            return [{"timestamp": i["date"], "value": i.get("value")} for i in vis["items"]]
+        if isinstance(obj.get("result"), list):
+            return obj["result"]
+        return []
     if isinstance(obj, list):
         rows = []
         for item in obj:
             if isinstance(item, dict) and "timestamp" in item:
                 rows.append(item)
+            elif isinstance(item, dict) and "date" in item:
+                rows.append({"timestamp": item["date"], "value": item.get("value")})
             else:
                 rows.extend(_rows(item))
         return rows
     return []
 
 
+def _is_date_map(obj):
+    return isinstance(obj, dict) and not ({"result", "visualisation"} & set(obj))
+
+
 def normalize_series(obj, field):
-    """Return {date: float} from a {date: value} map, [{date, value}] rows or raw API responses."""
+    """Return {date: float} from a {date: value} map, [{date, value}] rows or raw tool results."""
     if obj is None:
         return {}
-    if isinstance(obj, dict) and "result" not in obj:
+    if _is_date_map(obj):
         return {parse_date(k): float(v) for k, v in obj.items() if v is not None}
     out = {}
-    if isinstance(obj, list) and obj and isinstance(obj[0], dict) and "date" in obj[0]:
-        for row in obj:
-            if row.get("value") is not None:
-                out[parse_date(row["date"])] = float(row["value"])
-        return out
     for row in _rows(obj):
-        result = row.get("result")
-        if isinstance(result, dict) and result.get(field) is not None:
-            out[parse_date(row["timestamp"])] = float(result[field])
+        if "value" in row:
+            value = row["value"]
+        else:
+            payload = row.get("result") if isinstance(row.get("result"), dict) else row.get("event")
+            value = payload.get(field) if isinstance(payload, dict) else None
+        if value is not None:
+            out[parse_date(row["timestamp"])] = float(value)
     return out
 
 
@@ -102,9 +118,12 @@ def normalize_breakdown(obj, dimension, field, this_start, prev_start):
         day = parse_date(row["timestamp"])
         bucket = this_start if this_start <= day < this_start + dt.timedelta(days=7) else (
             prev_start if prev_start <= day < this_start else None)
-        if bucket is None or not isinstance(row.get("result"), list):
+        if bucket is None:
             continue
-        for item in row["result"]:
+        items = row.get("result") if isinstance(row.get("result"), list) else [row.get("event")]
+        for item in items:
+            if not isinstance(item, dict):
+                continue
             key = item.get(dimension)
             if key is None or item.get(field) is None:
                 continue
@@ -375,8 +394,10 @@ def to_markdown(report):
             any_mover = True
             unit = "money" if metric == "revenue" else "count"
             total = "n/a" if m["total_change_pct"] is None else f"{m['total_change_pct'] * 100:+.1f}%"
-            lines += [f"{BREAKDOWN_LABELS.get(metric, metric)} by {dimension} (game total {total})", "",
-                      f"| {dimension} | This week | Last week | Change | Vs game trend |", "|---|---|---|---|---|"]
+            dim_label = DIMENSION_LABELS.get(dimension, dimension)
+            lines += [f"{BREAKDOWN_LABELS.get(metric, metric)} by {dim_label} (game total {total})", "",
+                      f"| {dim_label.capitalize()} | This week | Last week | Change | Vs game trend |",
+                      "|---|---|---|---|---|"]
             for r in rows:
                 pct = "new" if r["change_pct"] is None else f"{r['change_pct'] * 100:+.1f}%"
                 vs = fmt_value(abs(r["vs_trend"]), unit)

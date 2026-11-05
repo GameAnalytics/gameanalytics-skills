@@ -62,7 +62,7 @@ Ask before creating the `gameanalytics/` folder, and before overwriting an exist
 
 ## Step 6: Hand off
 
-Summarize in chat: the number of events by type, the budget headroom, and the assumptions to confirm. Then offer `gameanalytics-sdk-setup` to implement it. After launch, point to Game Overview > Integrations in GameAnalytics, where limit alerts appear, and to `gameanalytics-data-check` for the first build.
+Summarize in chat: the number of events by type, the budget headroom, and the assumptions to confirm. Then offer `gameanalytics-sdk-setup` to implement it. After launch, point to Game Overview > Integrations in GameAnalytics, where limit alerts appear, and to `gameanalytics-data-check` for the first build: it measures the real events per player per day against the plan's estimate.
 
 ## Rules
 

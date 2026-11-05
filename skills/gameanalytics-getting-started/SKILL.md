@@ -25,14 +25,14 @@ From the interval, report the earliest and latest dates with data. Set:
 
 Say plainly that `T` is partial and everything below ends at `L`.
 
-## Step 3: Studios and games
+## Step 3: Games
 
-1. `get_studios` and `get_games` with `start_date = L - 29`, `end_date = L`.
-2. Rank the games: `query_metric` with `metric: "user_unique"`, all game IDs (up to 100), `start_date = L - 6`, `end_date = L`, `granularity: "all"`, `query_type: "group"`, `dimension: "game_id"`. This is unique users over 7 days.
-3. Show a table: studio, game, game ID, 7-day active users. Show the top 20 when there are more, and say how many there are in total.
+1. `get_games`, with no arguments. It returns every game the account can query, with its studio, including inactive, test and legacy games.
+2. Rank the games: `query_metric` with `metric: "user_unique"`, the game IDs (up to 100 per call), `start_date = L - 6`, `end_date = L`, `granularity: "all"`, `query_type: "group"`, `dimension: "game_id"`. This is unique users over 7 days. A game with no row had no activity in those days.
+3. Show a table of the active games, highest first: studio, game, game ID, 7-day active users. Show the top 20 when there are more. Then one line saying how many other games had no activity.
 4. Ask which game to look at. If the user already named one, or does not answer, take the game with the most active users and say so.
 
-A game missing from `get_games` had no activity in the last 30 days. If the user expected it, suggest `gameanalytics-data-check`.
+If a game the user expected has no activity, suggest `gameanalytics-data-check`.
 
 ## Step 4: Health snapshot
 
@@ -54,7 +54,7 @@ Calls for the chosen game (`game_ids: [id]`, `granularity: "day"`):
 5. `ilrd_revenue`, `L - 13` to `L`
 6. `query_retention`, `metric: "retention_ahead"`, `game_id`, `days_ahead: 1`, `L - 14` to `L - 1`
 7. `query_retention`, `metric: "retention_ahead"`, `game_id`, `days_ahead: 7`, `L - 20` to `L - 7`
-8. For the next questions: `get_dimension_values` for `build` and for `ab_id`, `games: [id]`, `L - 6` to `L`
+8. For the next questions: `get_dimension_values` for `build` and for `ab_id`, `games: [id]`, `L - 6` to `L`. An `ab_id` result of `[null]` means no A/B test is running.
 
 Compute, with code when the client can run it:
 

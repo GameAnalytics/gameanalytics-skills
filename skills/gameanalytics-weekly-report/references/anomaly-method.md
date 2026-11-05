@@ -6,7 +6,7 @@ One JSON file. Every series accepts any of these forms, so tool results can be s
 
 - a map of date to value: `{"2026-10-26": 1234, "2026-10-27": 1250}` (the most compact; prefer it)
 - rows: `[{"date": "2026-10-26", "value": 1234}]`
-- the raw tool result, or a list of raw results for chunked ranges: `[{"result": [{"timestamp": "...", "result": {...}}]}, {...}]`
+- the tool result as returned, or a list of them for chunked ranges. All three shapes in the metrics reference are read: the single-game `visualisation` items, `result` rows and `event` rows.
 
 ```json
 {

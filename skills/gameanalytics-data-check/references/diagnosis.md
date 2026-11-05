@@ -4,7 +4,7 @@ Look up each FAIL and WARN here. Fetch the engine's SDK page with `docs_fetch` w
 
 First step for any data problem: enable the SDK's info and verbose logs, run a device build, and watch Realtime > Live Events in GameAnalytics. The Unity editor does not run the native SDK, so editor play mode proves nothing.
 
-## The game is missing (check 2)
+## No data from the game (check 2)
 
 | Likely cause | Fix |
 |---|---|
@@ -47,6 +47,7 @@ First step for any data problem: enable the SDK's info and verbose logs, run a d
 | Family | Likely cause | Fix |
 |---|---|---|
 | Purchases | The business event call was removed or moved; `amount` sent as a float instead of integer cents; `currency` not an ISO 4217 code | Restore the call after a successful purchase, amount in cents, currency like `USD` |
+| Economy (`resource`) | Currencies or item types not registered before initialise, so the SDK rejects the events; a new currency added without registering it | Register every currency and item type in the configure calls before initialise |
 | Ads | Ad event calls missing from the new mediation callbacks | Re-add `show`, `clicked`, `failed_show` and `reward_received` calls |
 | Ad revenue | ILRD integration removed or the mediation SDK updated | Re-enable the ILRD integration for the new mediation SDK version |
 | Sessions | Session start or end no longer sent, for example after app lifecycle changes, or users drop out early | Check the SDK's session handling; compare session length to rule out a real gameplay change |

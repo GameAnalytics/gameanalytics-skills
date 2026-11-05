@@ -57,6 +57,27 @@ class NormalizeTests(unittest.TestCase):
         series = ws.normalize_series([chunk_a, chunk_b], "sum")
         self.assertEqual(series, {dt.date(2026, 10, 1): 10.5, dt.date(2026, 10, 2): 2.0})
 
+    def test_single_game_visualisation_chunks(self):
+        def chunk(day, value):
+            return {"metric": {"id": "user_unique"}, "period": {},
+                    "visualisation": {"type": "timeseries", "items": [{"date": f"{day}T00:00:00.000Z", "value": value}]}}
+        series = ws.normalize_series([chunk("2026-10-01", 5425), chunk("2026-10-02", 5434)], "user_unique")
+        self.assertEqual(series, {dt.date(2026, 10, 1): 5425.0, dt.date(2026, 10, 2): 5434.0})
+
+    def test_split_event_rows(self):
+        raw = {"result": [
+            {"event": {"country_code": "US", "platform": "ios", "user_unique": 70}, "timestamp": "2026-10-26T00:00:00.000Z"},
+            {"event": {"country_code": "DE", "platform": "ios", "user_unique": 30}, "timestamp": "2026-10-26T00:00:00.000Z"},
+            {"event": {"country_code": "US", "platform": "ios", "user_unique": 50}, "timestamp": "2026-10-19T00:00:00.000Z"},
+        ]}
+        this, prev = ws.normalize_breakdown(raw, "platform", "user_unique", WEEK, WEEK - dt.timedelta(days=7))
+        self.assertEqual(this, {"ios": 100.0})
+        self.assertEqual(prev, {"ios": 50.0})
+
+    def test_multi_game_timeseries_rows(self):
+        raw = {"result": [{"result": {"user_unique": 5605}, "timestamp": "2026-11-01T00:00:00.000Z"}]}
+        self.assertEqual(ws.normalize_series(raw, "user_unique"), {dt.date(2026, 11, 1): 5605.0})
+
     def test_date_value_rows(self):
         series = ws.normalize_series([{"date": "2026-10-01", "value": 3}], "x")
         self.assertEqual(series, {dt.date(2026, 10, 1): 3.0})
@@ -145,6 +166,7 @@ class MoverTests(unittest.TestCase):
         text = ws.to_markdown(ws.build_report(data))
         self.assertIn("| DAU (average) | 1,400 | 985 | +42.1% | anomaly (up) |", text)
         self.assertIn("Active users by platform", text)
+        self.assertIn("| Platform | This week |", text)
 
 
 if __name__ == "__main__":
