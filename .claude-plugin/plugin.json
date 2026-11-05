@@ -1,0 +1,14 @@
+{
+  "name": "gameanalytics",
+  "version": "0.1.0",
+  "description": "GameAnalytics skills for your AI assistant: plan event tracking within GA limits, integrate the SDK, get a first health snapshot of your games, check that a new build's data is arriving, and write a weekly KPI report. Connects the GameAnalytics MCP server and the GameAnalytics Documentation MCP.",
+  "author": {
+    "name": "GameAnalytics",
+    "url": "https://gameanalytics.com"
+  },
+  "homepage": "https://docs.gameanalytics.com/ai-tools/ai-tools-overview",
+  "repository": "https://github.com/GameAnalytics/gameanalytics-skills",
+  "license": "Apache-2.0",
+  "privacyPolicyUrl": "https://www.gameanalytics.com/trust/privacy-notice",
+  "keywords": ["gameanalytics", "game analytics", "mcp", "sdk", "tracking plan", "kpi", "retention", "weekly report"]
+}

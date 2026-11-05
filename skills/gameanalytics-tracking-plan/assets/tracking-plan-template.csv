@@ -1,0 +1,10 @@
+event_type,event_id,values,trigger,kpi,value_meaning,per_user_per_day,notes
+session,session,,Automatic: session start and end,Sessions and retention,,8,Sent by the SDK; about 4 sessions a day
+error,error,,Automatic in Unity iOS Android,Stability,,1,At most 10 per launch
+business,{item_type}:{item_id},item_type=gems_pack|no_ads|starter_bundle; item_id=small|medium|large,Successful IAP purchase,Revenue and ARPPU,Amount in cents,0.05,Send with receipt on iOS and Android
+ad,rewarded_video:show,,Rewarded video shown,Ad revenue per user,,3,Also send clicked and reward_received
+progression,{status}:World{world}:Level{level},status=Start|Fail|Complete; world=1..5; level=1..20,Level start and end,Level funnel and difficulty,Score on Complete,12,
+resource,{flow}:{currency}:{item_type}:{item_id},flow=Source|Sink; currency=Coins|Gems; item_type=reward|shop|boost; item_id=level_end|daily|pack|double_xp,Currency earned or spent,Economy balance,Amount of currency,6,Register Coins and Gems before init
+design,tutorial:{step}:complete,step=01_move|02_jump|03_shop|04_first_level,Tutorial step completed,Tutorial funnel,Seconds on step,1,
+design,shop:open:{source},source=main_menu|level_end|offer_popup,Shop opened,Shop conversion,,2,
+custom_dimension_01,player_type,values=new|returning|payer,Set on session start,Segments,,0,Registered before init

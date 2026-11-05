@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "gameanalytics",
+  "description": "GameAnalytics plugins for AI assistants.",
+  "owner": {
+    "name": "GameAnalytics",
+    "url": "https://gameanalytics.com"
+  },
+  "plugins": [
+    {
+      "name": "gameanalytics",
+      "description": "Plan event tracking within GA limits, integrate the SDK, get a first health snapshot, check a new build's data, and write a weekly KPI report.",
+      "source": "./",
+      "category": "data",
+      "homepage": "https://docs.gameanalytics.com/ai-tools/ai-tools-overview"
+    }
+  ]
+}

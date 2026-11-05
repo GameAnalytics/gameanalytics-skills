@@ -1,0 +1,10 @@
+{
+  "gameanalytics": {
+    "type": "http",
+    "url": "https://mcp.gameanalytics.com"
+  },
+  "gameanalytics-docs": {
+    "type": "http",
+    "url": "https://mcp.docs.gameanalytics.com"
+  }
+}
